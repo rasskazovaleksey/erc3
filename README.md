@@ -102,4 +102,7 @@ SYSTEM ERC3_Architecture:
    1. **Memory expert.** Manages storage and retrieval of information.
    2. **Error-handling expert.** Identifies and resolves errors during execution.
 
+### Prompts
+
+[PromptWizard](https://github.com/microsoft/PromptWizard)
 

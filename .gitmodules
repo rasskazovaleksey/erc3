@@ -1,0 +1,3 @@
+[submodule "PromptWizard"]
+	path = PromptWizard
+	url = https://github.com/microsoft/PromptWizard.git
