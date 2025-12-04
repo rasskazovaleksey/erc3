@@ -5,24 +5,115 @@ from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
 from langgraph.constants import END
 from langgraph.graph import StateGraph
+from langgraph.prebuilt import ToolNode
 
 from erc.experts.constraint import ConstraintExpert
 from erc.experts.edges import check_review_status, check_execution_status
 from erc.experts.planning import PlanningExpert
-from erc.experts.tool import report_task_completion, ToolExpert
+from erc.experts.tool import report_task_completion, ExecutorExpert
 from erc.state import AgentState
+from langchain_core.messages import AIMessage
 
+
+# def should_continue(state: AgentState):
+#     messages = state.get("messages", [])
+    
+#     if not messages:
+#         return "planner"
+
+#     last_message = messages[-1]
+    
+#     if isinstance(last_message, AIMessage) and last_message.tool_calls:
+#         return "tools"
+
+#     return "planner"
+
+
+# def workflow(
+#         planner_node,
+#         reviewer_node,
+#         executor_node,
+# ) -> StateGraph[AgentState]:
+#     workflow = StateGraph(AgentState)
+
+#     workflow.add_node("planner", planner_node.node)
+#     workflow.add_node("reviewer", reviewer_node.node)
+#     #workflow.add_node("executor", executor_node.node)
+
+
+#     workflow.add_node("tools", executor_node)
+
+
+
+#     workflow.set_entry_point("planner")
+
+#     workflow.add_edge("planner", "reviewer")
+
+#     workflow.add_conditional_edges(
+#         "executor",
+#         should_continue,
+#         {"tools": "tools", "end": END}
+#     )
+
+#     workflow.add_conditional_edges(
+#         "reviewer",
+#         check_review_status,
+#         {
+#             "execute": "executor",
+#             "replanning": "planner",
+#             END: END
+#         }
+#     )
+
+#     workflow.add_conditional_edges(
+#         "executor",
+#         check_execution_status,
+#         {
+#             "executor": "executor",
+#             "planner": "planner",
+#             END: END
+#         }
+#     )
+
+#     return workflow
+
+
+def check_review_status(state: AgentState):
+    """Решает, куда идти после Ревью: выполнять или переделывать."""
+    print(f"DEBUG: Check Review Status. Valid? {state.get('plan_is_valid')}")
+    
+    if state.get("plan_is_valid"):
+        return "executor"
+    return "planner"
+
+def should_continue(state: AgentState):
+    """Решает, куда идти после Executor: вызывать тул или обратно к планировщику."""
+    messages = state.get("messages", [])
+    if not messages:
+        return "planner"
+
+    last_message = messages[-1]
+    
+    if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
+        print(f"DEBUG: Executor requested tools: {last_message.tool_calls}")
+        return "tools"
+    
+    print("DEBUG: Executor finished step, going back to Planner.")
+    return "planner"
 
 def workflow(
-        planner_node,
-        reviewer_node,
-        executor_node,
-) -> StateGraph[AgentState]:
+    planner_node: PlanningExpert,
+    reviewer_node: ConstraintExpert,
+    executor_agent: ExecutorExpert, 
+    tool_node: ToolNode,           
+) -> StateGraph:
+    
     workflow = StateGraph(AgentState)
 
     workflow.add_node("planner", planner_node.node)
     workflow.add_node("reviewer", reviewer_node.node)
-    workflow.add_node("executor", executor_node.node)
+    workflow.add_node("executor", executor_agent.node) 
+    workflow.add_node("tools", tool_node)
 
     workflow.set_entry_point("planner")
 
@@ -32,21 +123,21 @@ def workflow(
         "reviewer",
         check_review_status,
         {
-            "execute": "executor",
-            "replanning": "planner",
-            END: END
+            "executor": "executor", 
+            "planner": "planner"
         }
     )
 
     workflow.add_conditional_edges(
         "executor",
-        check_execution_status,
+        should_continue,
         {
-            "executor": "executor",
-            "planner": "planner",
-            END: END
+            "tools": "tools",
+            "planner": "planner"
         }
     )
+
+    workflow.add_edge("tools", "executor")
 
     return workflow
 
@@ -86,7 +177,7 @@ if __name__ == "__main__":
         """,
         callback=meta_callback,
     )
-    t = ToolExpert(
+    t = ExecutorExpert(
         persona_path="../prompts/oss-20b-synthetic-persona",
         llm=llm,
         tools=[report_task_completion],

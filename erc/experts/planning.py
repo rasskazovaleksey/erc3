@@ -11,6 +11,7 @@ from erc.experts.base import BaseExpert
 from erc.state import AgentState, ExecutionPlan
 from erc.store.tools import ALL_TOOLS, TOOLS_DESC
 
+from utils.utils import get_persona
 
 class PlanningExpert(BaseExpert):
 
@@ -27,10 +28,10 @@ class PlanningExpert(BaseExpert):
         history_list = state.get("history", [])
 
         finished_actions = []
-        full_history_text = ""
+        #full_history_text = ""
 
-        for record in history_list:
-            full_history_text += f"- {record}\n" # TODO: WTF is this @Viktor? Memory management shall not be done like this
+        #for record in history_list:
+            #full_history_text += f"- {record}\n" # TODO: WTF is this @Viktor? Memory management shall not be done like this
 
             # Note:
             # FULL HISTORY: - content='95uZ' name='get_secret' tool_call_id='EakjXvADyXtsiM0qJaLnRDmUDZ7iX6Le'
@@ -65,7 +66,6 @@ class PlanningExpert(BaseExpert):
             Available Tools:
             {self.tools_desc}
             
-            FULL HISTORY: {full_history_text}
             TASK: {state['input_task']}
         """
         print(user_text)
