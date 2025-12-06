@@ -1,5 +1,5 @@
 # python
-from typing import Union, Dict, Any, List
+from typing import Union, Dict, Any, List, Literal
 
 from pydantic import BaseModel, Field
 
@@ -21,3 +21,13 @@ class ExecutionPlan(BaseModel):
 class ConstraintExpertOutput(BaseModel):
     is_valid: bool = Field(description="Indicates whether the current plan satisfies all constraints.")
     review_feedback: str = Field(description="Detailed feedback on any constraint violations or confirmations.")
+
+
+class ExecutorExpertOutput(BaseModel):
+    decision: Literal["tool", "code", "nothing"] = Field(
+        description="The decision made by the executor regarding the next action.")
+
+
+class Feedback(BaseModel):
+    reviewer: str = Field(description="Name or identifier of the reviewer providing the feedback.")
+    comments: str = Field(description="Detailed comments or feedback from the reviewer.")

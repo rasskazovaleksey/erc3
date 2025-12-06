@@ -56,11 +56,9 @@ class PlanningExpert(BaseExpert):
             plan = Plan(
                 plan=execution_candidate,
                 is_validated=False,
-                is_valid=False,
                 validation_attempts=0,
                 review=None,
             )
-            print(plan)
             return {"plan": plan}
         except Exception as e:
             logging.error(f"PLANNER CRASH: {e}")
@@ -99,13 +97,6 @@ if __name__ == "__main__":
     )
     state = AgentState(
         input_task="Count characters is word raspberry",
-        current_plan=None,
-        review_feedback=None,
-        plan_is_valid=False,
-        consecutive_review_failures=0,
-        is_finished=False,
-        history=[],
-        iterations=0,
-        execution_error=None,
+        plan=None,
     )
     p.node(state)
