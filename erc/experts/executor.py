@@ -52,8 +52,8 @@ class ExecutorExpert(BaseExpert):
 
 
         state_copy = state.copy()
-        tool = ExecutionTool(step=step, tool=execution_decision.decision)
-        state_copy['executor'].append(tool)
+        tool = ExecutionTool(step=step, tool=execution_decision.decision, status='')
+        state_copy['executor'] = tool
 
         return state_copy
 
