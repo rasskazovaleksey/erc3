@@ -10,7 +10,7 @@ from langchain_openai import ChatOpenAI
 from erc.experts.base import BaseExpert
 from erc.experts.schemas import ExecutorExpertOutput, ExecutionPlan, PlanStep
 from erc.persona import PersonaProvider
-from erc.state import AgentState
+from erc.state import AgentState, Plan
 from erc.store.tools import TOOLS_DESC
 
 
@@ -78,12 +78,14 @@ if __name__ == "__main__":
 
     state = AgentState(
         input_task="Count characters in world raspberry",
-        plan=ExecutionPlan(steps=[PlanStep(tool_name='report_completion',
-                                           arguments={'final_message': "The word 'raspberry' has 9 characters."},
-                                           reasoning="The task is to count the characters in the word 'raspberry', which is 9. No shopping tools are relevant.",
-                                           summary='Completed the character count.')]),
-        is_validated=False,
-        is_valid=False,
-        validation_attempts=0,
+        plan=Plan(
+            plan=ExecutionPlan(steps=[PlanStep(tool_name='report_completion',
+                                               arguments={'final_message': "The word 'raspberry' has 9 characters."},
+                                               reasoning="The task is to count the characters in the word 'raspberry', which is 9. No shopping tools are relevant.",
+                                               summary='Completed the character count.')]),
+            is_validated=False,
+            validation_attempts=0,
+            review=None,
+        )
     )
     c.node(state)
