@@ -20,19 +20,20 @@ class ToolExpert(BaseExpert):
         self.callback = callback
 
     def node(self, state: AgentState):
-        logging.info(f"Tool Node Started")
+        logging.info(f"ToolExpert Started")
 
-        plan = state.get('current_plan')
+        executor = state.get('executor')
         messages = state.get('messages', [])
 
-        if messages and isinstance(messages[-1], ToolMessage):
-            logging.info(f"Tool output received: {messages[-1].content}")
-
-        if not plan or not plan.steps:
+        if not executor:
             logging.info("Executor: No steps left.")
-            return {"current_plan": None}
+            return state
 
-        current_step = plan.steps.pop(0)
+        logging.info(f'executor: {executor}')
+        current_step = executor.step
+
+        if messages and isinstance(messages[-1], ToolMessage): 
+            logging.info(f"ToolExpert output received: {messages[-1].content}")
 
         system_msg = SystemMessage(content=self.persona_provider.get_primary_persona())
 
@@ -56,12 +57,7 @@ class ToolExpert(BaseExpert):
             self.callback(usage_meta_data, started)
 
         logging.info(f"EXECUTOR DECISION: {response.tool_calls}")
-
-        return {
-            "messages": [response],
-            "current_plan": plan
-        }
-
+        return {"messages": [response]} #TODO better to modify state??
 
 if __name__ == "__main__":
     def meta_callback(meta, started):

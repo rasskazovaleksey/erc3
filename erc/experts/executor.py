@@ -31,12 +31,13 @@ class ExecutorExpert(BaseExpert):
             Task: {state['input_task']}
         """
         plan = state.get('plan', None)
+        pointer = state.get('step_pointer', None)
         if not plan:
             logging.error("No plan found in state.")
             return state
 
         exec_plan = plan.plan
-        step = exec_plan.steps[0]
+        step = exec_plan.steps[pointer]
         
         started = time.time()
         messages = [SystemMessage(content=system_text), HumanMessage(content=user_text)]
@@ -51,8 +52,8 @@ class ExecutorExpert(BaseExpert):
 
 
         state_copy = state.copy()
-        tool = ExecutionTool(step=step, tool=execution_decision.decision)
-        state_copy['executor'].append(tool)
+        tool = ExecutionTool(step=step, tool=execution_decision.decision, status='')
+        state_copy['executor'] = tool
 
         return state_copy
 
@@ -82,7 +83,7 @@ if __name__ == "__main__":
         temperature=0.0,
         max_tokens=1000,
     )
-    c = ExecutorExpert(
+    e = ExecutorExpert(
         persona_path="../../prompts/oss-20b-synthetic-persona",
         llm=llm,
         tool_desc=TOOLS_DESC,
@@ -101,4 +102,4 @@ if __name__ == "__main__":
             review=None,
         )
     )
-    c.node(state)
+    e.node(state)
