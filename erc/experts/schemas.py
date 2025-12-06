@@ -12,6 +12,7 @@ class PlanStep(BaseModel):
     arguments: Union[Dict[str, Any], str, None] = Field(None, description="Arguments to be passed to the tool")
     reasoning: str = Field(None, description="Reasoning to be shown when executing the task. Keep in short")
     summary: str = Field(None, description="Summary of the execution step")
+    
 
 
 class ExecutionPlan(BaseModel):
@@ -24,7 +25,7 @@ class ConstraintExpertOutput(BaseModel):
 
 
 class ExecutorExpertOutput(BaseModel):
-    decision: Literal["tool", "code", "nothing"] = Field(
+    decision: Literal["tool", "code"] = Field(
         description="The decision made by the executor regarding the next action.")
 
 

@@ -10,7 +10,7 @@ from langchain_openai import ChatOpenAI
 from erc.experts.base import BaseExpert
 from erc.experts.schemas import ExecutorExpertOutput, ExecutionPlan, PlanStep
 from erc.persona import PersonaProvider
-from erc.state import AgentState, Plan
+from erc.state import AgentState, ExecutionTool, Plan
 from erc.store.tools import TOOLS_DESC
 
 
@@ -30,6 +30,14 @@ class ExecutorExpert(BaseExpert):
             Available Tools: {self.tools_desc}
             Task: {state['input_task']}
         """
+        plan = state.get('plan', None)
+        if not plan:
+            logging.error("No plan found in state.")
+            return state
+
+        exec_plan = plan.plan
+        step = exec_plan.steps[0]
+        
         started = time.time()
         messages = [SystemMessage(content=system_text), HumanMessage(content=user_text)]
         usage_meta_data = UsageMetadataCallbackHandler()
@@ -41,7 +49,12 @@ class ExecutorExpert(BaseExpert):
 
         execution_decision: ExecutorExpertOutput = response
 
-        return state
+
+        state_copy = state.copy()
+        tool = ExecutionTool(step=step, tool=execution_decision.decision)
+        state_copy['executor'].append(tool)
+
+        return state_copy
 
 
 if __name__ == "__main__":

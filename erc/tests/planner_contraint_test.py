@@ -4,6 +4,7 @@ import sys
 import yaml
 from langchain_core.runnables import RunnableConfig
 from langchain_openai import ChatOpenAI
+from langgraph.constants import END
 from langgraph.graph import StateGraph
 
 from erc.experts.constraint import ConstraintExpert
@@ -12,7 +13,7 @@ from erc.state import AgentState
 
 
 def executor_node(state: AgentState):
-    logging.info("MOCK EXECUTOR NODE")
+    print("MOCK EXECUTOR NODE")
     return state
 
 
@@ -46,9 +47,9 @@ def workflow(
     workflow.add_node("executor", executor_node)
 
     workflow.set_entry_point("planner")
-    workflow.set_finish_point("executor")
 
     workflow.add_edge("planner", "reviewer")
+    workflow.add_edge("executor", END)
 
     workflow.add_conditional_edges(
         "reviewer",

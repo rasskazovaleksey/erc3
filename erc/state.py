@@ -1,8 +1,8 @@
-from typing import TypedDict, Optional
+from typing import TypedDict, Optional, List
 
 from pydantic import BaseModel
 
-from erc.experts.schemas import ExecutionPlan, ConstraintExpertOutput
+from erc.experts.schemas import ExecutionPlan, ConstraintExpertOutput, PlanStep
 
 
 class Plan(BaseModel):
@@ -11,7 +11,11 @@ class Plan(BaseModel):
     validation_attempts: int
     review: Optional[ConstraintExpertOutput]
 
+class ExecutionTool(BaseModel):
+    step: PlanStep
+    tool: str
 
 class AgentState(TypedDict):
     input_task: str
     plan: Optional[Plan]
+    executor: List[ExecutionTool]
